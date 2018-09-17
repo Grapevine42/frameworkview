@@ -1,7 +1,6 @@
 // Dom7
 var $$ = Dom7;
 
-
 // Framework7 App main instance
 var app  = new Framework7({
   root: '#app', // App root element
@@ -97,6 +96,9 @@ var messagebar = app.messagebar.create({
 // Response flag
 var responseInProgress = false;
 
+var socket = io.connect("http://127.0.0.1:8080");
+
+
 // Send Message
 $$('.send-link').on('click', function () {
 
@@ -118,6 +120,30 @@ $$('.send-link').on('click', function () {
   if (responseInProgress) return;
   // Receive dummy message
   receiveMessage();
+
+  console.log(text);
+
+  socket.emit('message', text);
+
+  var msg;
+
+  socket.on('message', (data)=>{
+    msg = data;
+    console.log(msg.data.output.text[0]);
+  });
+
+  // axios.get('https://grapevine-chatserver.mybluemix.net/listPhoto')
+  //   .then(function (response) {
+  //     // handle success
+  //     console.log(response);
+  //   })
+  //   .catch(function (error) {
+  //     // handle error
+  //     console.log(error);
+  //   })
+  //   .then(function () {
+  //     // always executed
+  //   });
 });
 
 
@@ -159,8 +185,6 @@ function receiveMessage() {
       avatar: person.avatar
     });
 
-    setTimeout(function () {
-      // Add received dummy message
       messages.addMessage({
         text: answer,
         type: 'received',
@@ -170,22 +194,22 @@ function receiveMessage() {
       // Hide typing indicator
       messages.hideTyping();
       responseInProgress = false;
-    }, 4000);
+
+
+    //
+    // setTimeout(function () {
+    //   // Add received dummy message
+    //   messages.addMessage({
+    //     text: answer,
+    //     type: 'received',
+    //     name: person.name,
+    //     avatar: person.avatar
+    //   });
+    //   // Hide typing indicator
+    //   messages.hideTyping();
+    //   responseInProgress = false;
+    // }, 4000);
   }, 1000);
 }
-
-
-axios.get('https://grapevine-chatserver.mybluemix.net/listPhoto')
-  .then(function (response) {
-    // handle success
-    console.log(response);
-  })
-  .catch(function (error) {
-    // handle error
-    console.log(error);
-  })
-  .then(function () {
-    // always executed
-  });
 
 
