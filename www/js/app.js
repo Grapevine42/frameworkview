@@ -32,20 +32,6 @@ var mainView = app.views.create('.view-main', {
 });
 
 
-
-// Login Screen Demo
-$$('#my-login-screen .login-button').on('click', function () {
-  var username = $$('#my-login-screen [name="username"]').val();
-  var password = $$('#my-login-screen [name="password"]').val();
-
-  // Close login screen
-  app.loginScreen.close('#my-login-screen');
-
-  // Alert username and password
-  app.dialog.alert('Username: ' + username + '<br>Password: ' + password);
-});
-
-
 // Init Messages
 var messages = app.messages.create({
   el: '.messages',
@@ -96,11 +82,18 @@ var messagebar = app.messagebar.create({
 // Response flag
 var responseInProgress = false;
 
-var socket = io.connect("http://127.0.0.1:8080");
+
+
+
+// 소켓 io서버 설정하기
+// var socket = io.connect("http://127.0.0.1:8080");
+var socket = io.connect("https://grapevine-chatserver.mybluemix.net/");
 
 
 // Send Message
 $$('.send-link').on('click', function () {
+
+  console.log('클릭버튼 누른다');
 
   var text = messagebar.getValue().replace(/\n/g, '<br>').trim();
   // return if empty message
@@ -119,96 +112,43 @@ $$('.send-link').on('click', function () {
 
   if (responseInProgress) return;
   // Receive dummy message
-  receiveMessage();
-
-  console.log(text);
 
   socket.emit('message', text);
 
-  var msg;
+  let msg;
 
   socket.on('message', (data)=>{
-    msg = data;
-    console.log(msg.data.output.text[0]);
+    msg = data.data.output.text[0];
+    console.log('몇번 호출됩니까?');
+    receiveMessage(msg);
   });
-
-  // axios.get('https://grapevine-chatserver.mybluemix.net/listPhoto')
-  //   .then(function (response) {
-  //     // handle success
-  //     console.log(response);
-  //   })
-  //   .catch(function (error) {
-  //     // handle error
-  //     console.log(error);
-  //   })
-  //   .then(function () {
-  //     // always executed
-  //   });
 });
 
 
-// Dummy response
-var answers = [
-  'Yes!',
-  'No',
-  'Hm...',
-  'I am not sure',
-  'And what about you?',
-  'May be ;)',
-  'Lorem ipsum dolor sit amet, consectetur',
-  'What?',
-  'Are you sure?',
-  'Of course',
-  'Need to think about it',
-  'Amazing!!!'
-]
-var people = [
-  {
-    name: 'Kate Johnson',
-    avatar: 'http://lorempixel.com/100/100/people/9'
-  },
-  {
-    name: 'Blue Ninja',
-    avatar: 'http://lorempixel.com/100/100/people/7'
-  }
-];
-function receiveMessage() {
+function receiveMessage(msg) {
+  var img = 'images/botImg.jpg';
   responseInProgress = true;
   setTimeout(function () {
     // Get random answer and random person
-    var answer = answers[Math.floor(Math.random() * answers.length)];
-    var person = people[Math.floor(Math.random() * people.length)];
 
     // Show typing indicator
     messages.showTyping({
-      header: person.name + ' is typing',
-      avatar: person.avatar
+      header: 'chatbot is typing',
+      avatar: img
     });
 
+    setTimeout(function () {
+      // Add received dummy message
       messages.addMessage({
-        text: answer,
+        text: msg,
         type: 'received',
-        name: person.name,
-        avatar: person.avatar
+        name: 'chatbot',
+        avatar: img
       });
       // Hide typing indicator
       messages.hideTyping();
       responseInProgress = false;
-
-
-    //
-    // setTimeout(function () {
-    //   // Add received dummy message
-    //   messages.addMessage({
-    //     text: answer,
-    //     type: 'received',
-    //     name: person.name,
-    //     avatar: person.avatar
-    //   });
-    //   // Hide typing indicator
-    //   messages.hideTyping();
-    //   responseInProgress = false;
-    // }, 4000);
+    }, 2000);
   }, 1000);
 }
 
